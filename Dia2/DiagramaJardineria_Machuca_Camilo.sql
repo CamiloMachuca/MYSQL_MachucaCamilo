@@ -962,12 +962,12 @@ select * from pedido where fecha_pedido >= '2009-01-01';
 select * from pedido where month(fecha_pedido)=01;
 
 -- 13. Devuelve un listado con todos los pagos que se realizaron en el año 2008 mediante Paypal. Ordene el resultado de mayor a menor.
-select * from pago where year (fecha_pago)=2008 and forma_pago='PayPal';
+select * from pago where year (fecha_pago)=2008 and forma_pago='PayPal' order by total desc;
 -- 14. Devuelve un listado con todas las formas de pago que aparecen en la tabla pago. Tenga en cuenta que no deben aparecer formas de pago repetidas.
 select distinct forma_pago from pago;
 
 -- 15. Devuelve un listado con todos los productos que pertenecen a la gama Ornamentales y que tienen más de 100 unidades en stock. El listado deberá estar ordenado por su precio de venta, mostrando en primer lugar los de mayor precio.
-select * from producto where gama = 'Ornamentales' and cantidad_en_stock > 100;
+select * from producto where gama = 'Ornamentales' and cantidad_en_stock >= 100 order by precio_venta desc;
 -- 16. Devuelve un listado con todos los clientes que sean de la ciudad de Madrid y cuyo representante de ventas tenga el código de empleado 11 o 30.
 select * from cliente where ciudad = 'Madrid' and codigo_empleado_rep_ventas= 11 or codigo_empleado_rep_ventas= 30;
 
