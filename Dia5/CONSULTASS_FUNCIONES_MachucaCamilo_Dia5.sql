@@ -75,7 +75,7 @@ select lower (concat_ws(' ',nombre ,apellido1,apellido2 )) as datos_empleados fr
 -- aparecer en dos columnas, una mostrará únicamente los dígitos del nif y la
 -- otra la letra.
 select * from empleado;
-select id, substr(nif, 1,8) as numeros,substr(nif, 9,8) as letras from empleado ;
+select id, REGEXP_REPLACE(nif,'[^0-9]','') as numeros, REGEXP_REPLACE(nif, '[^a-z]','') as letras from empleado ;
 
 -- 11.Lista el nombre de cada departamento y el valor del presupuesto actual del
 -- que dispone. Para calcular este dato tendrá que restar al valor del
@@ -207,7 +207,10 @@ select nombre, apellido1, apellido2, nif from empleado where id_departamento in 
 
 
 
+-- ##############################################
 -- Consultas multitabla (Composición interna)
+-- ##############################################
+
 
 -- 1.Devuelve un listado con los empleados y los datos de los departamentos
 -- donde trabaja cada uno.
@@ -261,7 +264,9 @@ select distinct d.nombre from empleado e inner join departamento d on d.id=e.id_
 
 
 
+-- ##############################################
 -- Consultas multitabla (Composición externa)
+-- ##############################################
 
 
 
@@ -283,13 +288,18 @@ select * from departamento d left join empleado e on e.id_departamento=d.id wher
 -- tienen ningún departamento asociado y los departamentos que no tienen
 -- ningún empleado asociado. Ordene el listado alfabéticamente por el
 -- nombre del departamento.
-select * from empleado full join departamento on empleado.id_departamento=departamento.id order by d.nombre asc;
+select * from empleado left join departamento on empleado.id_departamento=departamento.id union select * from empleado right join departamento on empleado.id_departamento=departamento.id order by 8 asc;
 
 -- 5. Devuelve un listado con los empleados que no tienen ningún departamento
 -- asociado y los departamentos que no tienen ningún empleado asociado.
 -- Ordene el listado alfabéticamente por el nombre del departamento.
+select * from empleado e left join departamento d on e.id_departamento=d.id where e.id_departamento is null union select * from empleado e right join departamento d on e.id_departamento=d.id where e.id_departamento is null order by 8 asc;
 
+
+
+ -- ############################
 -- Consultas resumen 
+-- #############################
 -- 1. Calcula la suma del presupuesto de todos los departamentos.
 select sum(presupuesto) as total_presupuesto from departamento;
 
@@ -328,8 +338,7 @@ select d.nombre as nombre_departamento, count(e.id) as cantidad_empleado from de
 -- resultado debe tener dos columnas, una con el nombre del departamento y
 -- otra con el número de empleados que tiene asignados.
 
-select d.nombre as nombre_departamento, count(e.id) as cantidad_empleado from departamento d inner join empleado e on d.id=e.id_departamento where count(e.id)>2 group by 1;
-
+select d.nombre as nombre_departamento, count(e.id) as cantidad_empleado from departamento d inner join empleado e on d.id=e.id_departamento group by d.id having count(e.id)>2;
 -- 11. Calcula el número de empleados que trabajan en cada uno de los
 -- departamentos. El resultado de esta consulta también tiene que incluir
 -- aquellos departamentos que no tienen ningún empleado asociado.
@@ -338,4 +347,3 @@ select d.nombre as nombre_departamento, count(e.id) as cantidad_empleado from de
 -- 12.Calcula el número de empleados que trabajan en cada unos de los
 -- departamentos que tienen un presupuesto mayor a 200000 euros.
 select d.nombre as nombre_departamento, count(e.id) as cantidad_empleado from departamento d left join empleado e on d.id=e.id_departamento where d.presupuesto>200000 group by 1;
-select * from departamento;
