@@ -921,17 +921,18 @@ select a.id_alquiler,c.nombre, Dias_alquiler_vehiculo(a.fecha_salida ,a.fecha_ll
 -- #######################################################
 -- procesos 
 -- #######################################################
+select * from sucursales;
  -- 1.proceso para añadir una nueva sucursal
 delimiter //
-create procedure insertarSucursal(in celular Varchar(50))
+create procedure insertarSucursal(in celular Varchar(50), direccion varchar(50), ciudad varchar(50), telefono_fijo varchar(50), correo_electronico varchar(50))
 begin
-insert into sucursales(celular) values(celular);
+insert into sucursales(celular, direccion, ciudad, telefono_fijo, correo_electronico) values(celular, direccion, ciudad, telefono_fijo, correo_electronico);
 end 
 // delimiter ;
 -- drop procedure insertarSucursal;
-call insertarSucursal ("312223242");
+call insertarSucursal ("312223242", "gfytgvcd-qdt-12gh", "cucuta", "109999992", "ricardo32@gmail.com");
 
-
+select * from sucursales;
 -- ########################################################
 -- ########################################################
 -- 2.proceso para añadir un nuevo empleado
@@ -991,7 +992,7 @@ inner join clientes c on c.id_cliente=a.id_cliente where a.id_alquiler= 2 limit 
 
 
 -- ########################################################
-select * from vehiculos;
+
 -- 6. proceso para añadir un nuevo vehiculo
 
 delimiter //
@@ -1004,7 +1005,8 @@ end
 call añadir_carro("no", "6", "sedan", "AVCDD", "4X4", "2024", "5", "blanco", "2.5");
 
 -- ########################################################
-select * from alquileres;
+
+-- 7. proceso para añadir un nuevo alquiler
 delimiter // 
 create procedure añadir_alquiler (in fecha_llegada date, id_cliente int, id_empleado int, id_vehiculo int, id_sucursal int, fecha_salida date, fecha_esperada_llegada date, valor_alquiler_dia decimal(10,2), valor_alquiler_semana decimal(10,2), valor_cotizado decimal(10,2), valor_pagado decimal(10,2), id_descuento int )
 begin 
@@ -1014,6 +1016,45 @@ fecha_esperada_llegada, valor_alquiler_dia, valor_alquiler_semana, valor_cotizad
 end 
 // delimiter ;
 
-call añadir_alquiler(current_date()+5,2,3,5,4,current_date()+1,current_date()+10,200,300,500,400,2 )
+call añadir_alquiler(current_date()+5,2,3,5,4,current_date()+1,current_date()+10,200,300,500,400,2 );
 
+-- ########################################################
 
+-- 8. proceso para añadir un nuevo descuento 
+delimiter //
+create procedure Añadirdescuento (in id_vehiculo int, porcentaje_descuento decimal(10,2), inicio_descuento date, fin_descuento date)
+begin 
+insert into descuento(id_vehiculo, porcentaje_descuento, inicio_descuento, fin_descuento) values (id_vehiculo, porcentaje_descuento, inicio_descuento, fin_descuento);
+end
+// delimiter ;
+call Añadirdescuento(2,30,current_date()+5, current_date()+9);
+
+-- ########################################################
+
+-- 9.  proceso para añadir un nuevo porcentaje a un descuento que el usuario requiera
+select * from descuento;
+delimiter // 
+create procedure añadirPorcentajeDescuento(in id int, porcentaje_descuento decimal(10,2))
+begin
+update descuento set porcentaje_descuento= porcentaje_descuento where id= id_descuento;
+
+end 
+// delimiter ;
+
+call añadirPorcentajeDescuento(1,20);
+
+-- ########################################################
+
+-- 10.   proceso para aplicar el cobro de mas por el retraso en la entrega del vehiculo
+delimiter //
+create procedure aplicar_cobroMas(in id int, valor_cotizado decimal(10,2), valor_final decimal(10,2))
+begin
+	set valor_final = valor_cotizado * power((1+ 8/100), valor_final);
+	update alquileres set valor_cotizado= valor_final where id_alquiler= id;
+end 
+// delimiter ;
+-- drop procedure aplicar_cobroMas;
+call aplicar_cobroMas (10,(select valor_cotizado from alquileres where id_alquiler = 10),  (select Dias_retraso(fecha_esperada_llegada, fecha_llegada) from alquileres where id_alquiler=10
+));
+
+select * from alquileres;
