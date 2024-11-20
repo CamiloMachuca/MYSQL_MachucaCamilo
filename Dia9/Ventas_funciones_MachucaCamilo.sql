@@ -68,6 +68,7 @@ INSERT INTO pedido (id, total, fecha, id_cliente, id_comercial) VALUES
 (15, 480.45, '2024-05-12', 1, 5),
 (16, 1200.60, '2024-06-03', 1, 5);
 
+-- ####################################################################################
 -- 1. obtener el total de pedidos realizados por un cliente.
 delimiter // 
 create function total_pedidos( id int)
@@ -79,29 +80,83 @@ select count(p.id_cliente) into total from pedido p inner join cliente c on p.id
 return total;
 end //
 delimiter ;
-select total_pedidos(4);
+select total_pedidos(1);
 
 
 
 -- select count(p.id_cliente) from pedido p inner join cliente c on p.id_cliente=C.id where p.id_cliente=2;
 -- drop function total_pedidos;
 -- select total_pedidos(id) from pedido;
--- select * from pedido;
--- select * from cliente;
 
+-- ####################################################################################
 -- 2. calcular la comision total ganada por un comercial
+delimiter // 
+create function comision_total( id int)
+returns int 
+deterministic
+begin 
+declare total int;
+declare comision2 float;
+select sum(p.total) into total from comercial c inner join pedido p on c.id=p.id_comercial where c.id=id limit 1;
+select comision into comision2 from comercial c inner join pedido p on c.id=p.id_comercial where c.id=id limit 1;
+set total  = total* comision2;
+return total;
+end //
+delimiter ;
+select comision_total(2) as comisionTotal;
+-- select sum(p.total) from comercial c inner join pedido p on c.id=p.id_comercial where c.id=2;
+-- select * from comercial;
+-- select * from pedido;
+-- drop function comision_total;
 
+-- ####################################################################################
 -- 3. obtener el cliente con mayor total en pedidos
 delimiter // 
-create function total_pedidos( nombre varchar(50))
+create function mayor_pedido()
 returns varchar(50)
 deterministic
 begin 
-declare total_nombre int;
-select count(p.id_cliente), c.nombre into total from pedido p inner join cliente c on p.id_cliente=C.id;
-return total_nombre;
+declare nombre_cliente varchar(50);
+select c.nombre into nombre_cliente from pedido p inner join cliente c on p.id_cliente=C.id group by 1 order by sum(p.total) desc limit 1 ;
+return nombre_cliente;
 end //
 delimiter ;
-select total_pedidos();
 
+-- drop function mayor_pedido;
+select mayor_pedido() as clienteConMayorTotal, p.total from pedido p inner join cliente c on p.id_cliente=C.id order by p.total desc limit 1 ;
+
+-- ####################################################################################
+
+-- 4. contar la cantidad de pedidos realizados en un año en especifico
+-- select count(p.id_cliente) from pedido p inner join cliente c on p.id_cliente=C.id where year(p.fecha)= 2024;
+
+delimiter // 
+create function cantidadPedidos_año( año int)
+returns int
+deterministic
+begin 
+declare total int;
+select count(p.fecha) into total from pedido p inner join cliente c on p.id_cliente=C.id where year(p.fecha)= año limit 1;
+return total;
+end //
+delimiter ;
+select cantidadPedidos_año(2024) as Cantidad_pedidos_año;
+
+-- drop function cantidadPedidos_año;
+
+
+-- ####################################################################################
+-- 5. obtener el promedio de total de pedidos por cliente
+delimiter // 
+create function promedioPedidoCliente(id int)
+returns decimal(10,2)
+deterministic
+begin 
+declare total_cliente decimal(10,2);
+select avg(p.total) into total_cliente  from pedido p where p.id_cliente= id;
+return total_cliente;
+end //
+delimiter ;
+-- drop function promedioPedidoCliente;
+select promedioPedidoCliente(1) as promedio_pedidos;
 
